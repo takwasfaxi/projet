@@ -2,7 +2,7 @@ const Event=require('../models/Event')
 
 
 
-//create new event
+//create new event(admin)
 const createEvent=async(req,res)=>{
     try{
         const { nom, description, date, lieu, affiche } = req.body;
@@ -15,7 +15,7 @@ const createEvent=async(req,res)=>{
       }
 };
 
-//get all events : 
+//consulter liste des evenements (citoyen/admin): 
 const getAllEvents=async(req,res)=>{
     try{
         const events=await Event.find();
@@ -26,7 +26,7 @@ const getAllEvents=async(req,res)=>{
     }
 };
 
-//get event by id
+//consulter les details d'un evenements (citoyen/admin):
 const getEventById = async(req,res)=>{
     try {
         const eventId = req.params.id;
@@ -40,7 +40,7 @@ const getEventById = async(req,res)=>{
       }
     };
 
-//update Events
+//modifier un evenement(admin)
 const updateEvent = async (req, res) => {
     try {
       const { nom, description, date, lieu, affiche } = req.body;
@@ -58,7 +58,7 @@ const updateEvent = async (req, res) => {
     }
   };
 
-//delete Event :
+//delete Event (admin) :
 const deleteEvent = async (req, res) => {
     try {
       const deletedEvent = await Event.findByIdAndDelete(req.params.id);
@@ -72,11 +72,27 @@ const deleteEvent = async (req, res) => {
     }
   };
 
+  //participer à un evènement (citoyen)
+  const addUserToEvent = async (req, res) => {
+    const event = await Event.findById(req.params.id);
+    const user = await User.findById(req.params.id);
+    if (!event || !user) return res.status(404).json({ message: 'Event or user not found' });
+
+    event.participants.push(user._id);
+    user.events.push(event._id);
+
+    await event.save();
+    await user.save();
+
+    res.json({ message: 'User added to event successfully' });
+};
+
 module.exports={
     createEvent,
     getAllEvents,
     getEventById,
     updateEvent,
-    deleteEvent
+    deleteEvent,
+    addUserToEvent
 
 }
